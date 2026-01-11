@@ -23,7 +23,7 @@ spring:
   cloud:
     # ✅ Fica aqui (não dentro de stream)
     function:
-      definition: userCreatedListener
+      definition: userCreatedListener;userCreatedDlqListener
 
     stream:
       defaultBinder: kafka
