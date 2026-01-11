@@ -1,6 +1,11 @@
 server:
   port: 8081
 
+
+app:
+  s3:
+    bucket: ${APP_S3_BUCKET}
+
 spring:
   application:
     name: registry

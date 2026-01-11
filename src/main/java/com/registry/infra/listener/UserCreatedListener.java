@@ -2,11 +2,14 @@ package com.registry.infra.listener;
 
 import com.registry.domain.TypeUserStatus;
 import com.registry.domain.User;
+import com.registry.infra.CsvConverter;
+import com.registry.infra.S3Service;
 import com.registry.infra.UserRepository;
 import com.registry.infra.persistence.UserProcessedEvent;
 import com.registry.infra.persistence.UserProcessedEventRepository;
 import com.registry.infra.persistence.enums.ProcessStatus;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
 
@@ -19,11 +22,17 @@ public class UserCreatedListener implements Consumer<Message<User>> {
 
     private final UserRepository repository;
     private final UserProcessedEventRepository userProcessedEventRepository;
+    private final S3Service s3Service;
+    private final CsvConverter csvConverter;
+    private final String bucket;
 
     public UserCreatedListener(UserRepository repository,
-                               UserProcessedEventRepository userProcessedEventRepository) {
+                               UserProcessedEventRepository userProcessedEventRepository, S3Service s3Service, CsvConverter csvConverter, @Value("${app.s3.bucket}") String bucket) {
         this.repository = repository;
         this.userProcessedEventRepository = userProcessedEventRepository;
+        this.s3Service = s3Service;
+        this.csvConverter = csvConverter;
+        this.bucket = bucket;
     }
 
     @Override
@@ -45,6 +54,13 @@ public class UserCreatedListener implements Consumer<Message<User>> {
 
             user.setStatus(TypeUserStatus.ADMINISTRATOR);
             repository.save(user);
+
+            List<User> users = repository.findAll();
+            byte[] csvBytes = csvConverter.toCsvBytes(users, Users.class);
+
+            String key = "exports/users" + System.currentTimeMillis() + ".csv";
+
+            s3Service.putBytes(bucket, key, csvBytes, "text/csv");
 
         } catch (Exception e) {
             // 1) eventId: tenta header, se não vier gera um fallback
