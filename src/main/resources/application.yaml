@@ -19,3 +19,47 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  cloud:
+    # ✅ Fica aqui (não dentro de stream)
+    function:
+      definition: userCreatedListener
+
+    stream:
+      defaultBinder: kafka
+
+      kafka:
+        binder:
+          brokers: localhost:9092
+
+        # ✅ Config específica do Kafka Binder para o CONSUMER (DLQ/DLT)
+        bindings:
+          userCreatedListener-in-0:
+            consumer:
+              enable-dlq: true
+              # se não setar, o padrão vira: error.<destination>.<group>
+              dlq-name: app.v1.event.user-created.dlq
+              # opcional (mantenha simples): 1 partição na DLQ
+              dlq-partitions: 1
+
+      bindings:
+        # ✅ CONSUMER
+        userCreatedListener-in-0:
+          destination: app.v1.event.user-created
+          group: usercreated
+          content-type: application/json
+          consumer:
+            # quantas tentativas antes de jogar na DLQ
+            max-attempts: 3
+            # backoff entre tentativas (opcional, mas bem útil)
+            back-off-initial-interval: 1000
+            back-off-max-interval: 10000
+            back-off-multiplier: 2.0
+
+        # ✅ PRODUCER (mantido como você já tinha)
+        userCreated-out-0:
+          destination: user.created
+          content-type: application/json
+          producer:
+            required-groups: user-status-service
+            partition-count: 3

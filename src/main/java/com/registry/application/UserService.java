@@ -11,15 +11,21 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository repository;
+    private final UserEventGateway gateway;
 
-    public UserService(UserRepository repository) {
+    public UserService(UserRepository repository, UserEventGateway gateway) {
         this.repository = repository;
+        this.gateway = gateway;
     }
 
     @Transactional
     public User create(User u) {
 
-        return repository.save(u);
+        User userCreated = repository.save(u);
+
+        gateway.sendUserToUpdateStatus(userCreated);
+
+        return userCreated;
     }
 
     public List<User> list() {

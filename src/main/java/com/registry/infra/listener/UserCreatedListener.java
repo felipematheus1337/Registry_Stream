@@ -1,0 +1,26 @@
+package com.registry.infra.listener;
+
+import com.registry.domain.TypeUserStatus;
+import com.registry.domain.User;
+import com.registry.infra.UserRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Component;
+
+import java.util.function.Consumer;
+
+@Component
+public class UserCreatedListener implements Consumer<User> {
+
+    private final UserRepository repository;
+
+    public UserCreatedListener(UserRepository repository) {
+        this.repository = repository;
+    }
+
+    @Override
+    @Transactional
+    public void accept(User user) {
+        user.setStatus(TypeUserStatus.ADMINISTRATOR);
+        repository.save(user);
+    }
+}
