@@ -18,6 +18,7 @@ public class UserService {
 
     @Transactional
     public User create(User u) {
+
         return repository.save(u);
     }
 

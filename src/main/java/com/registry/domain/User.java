@@ -1,5 +1,6 @@
 package com.registry.domain;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
 @Entity
@@ -14,7 +15,7 @@ public class User {
     private Integer age;
 
     @Enumerated(EnumType.STRING)
-    private TypeUserStatus status;
+    private TypeUserStatus status = TypeUserStatus.MODERATOR;
 
 
     public User() {
@@ -24,6 +25,39 @@ public class User {
         this.id = id;
         this.name = name;
         this.age = age;
+        this.status = status;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+
+    @Nullable
+    public TypeUserStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(@Nullable TypeUserStatus status) {
         this.status = status;
     }
 }
