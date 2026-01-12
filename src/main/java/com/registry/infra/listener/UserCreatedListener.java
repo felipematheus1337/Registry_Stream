@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -56,7 +57,7 @@ public class UserCreatedListener implements Consumer<Message<User>> {
             repository.save(user);
 
             List<User> users = repository.findAll();
-            byte[] csvBytes = csvConverter.toCsvBytes(users, Users.class);
+            byte[] csvBytes = csvConverter.toCsvBytes(users, User.class);
 
             String key = "exports/users" + System.currentTimeMillis() + ".csv";
 
